@@ -61,6 +61,7 @@
 </template>
 
 <script setup lang="ts">
+const { baseUrl } = useRuntimeConfig().public;
 const supabase = useSupabase();
 
 const url = ref("");
@@ -70,12 +71,12 @@ const isUrlGenerated = ref(false);
 
 const generateShortUrl = async () => {
   const randomString = Math.random().toString(36).substring(2, 8);
-  return `https://linksprint.vercel.app/${randomString}`;
+  return `${baseUrl}/${randomString}`;
 };
 
 const generateUrl = async () => {
   if (!customUrl.value) generatedUrl.value = await generateShortUrl();
-  else generatedUrl.value = `https://linksprint.vercel.app/${customUrl.value}`;
+  else generatedUrl.value =  `${baseUrl}/${customUrl.value}`;
 
   const payload = {
     long_url: url.value,
