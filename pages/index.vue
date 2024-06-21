@@ -54,13 +54,22 @@ const generatedUrl = ref("");
 
 const isUrlGenerated = ref(false);
 
-const submitForm = () => {
+const generateShortUrl = async () => {
+  const randomString = Math.random().toString(36).substring(2, 8);
   isUrlGenerated.value = true;
+  return `https://linksprint.vercel.app/${randomString}`;
+};
+
+const generateUrl = async () => {
+  generatedUrl.value = await generateShortUrl();
+};
+
+const submitForm = () => {
+  generateUrl();
 };
 
 const copyToClipboard = () => {
-  const shortUrl = document.getElementById("shortUrl") as HTMLParagraphElement;
-  navigator.clipboard.writeText(shortUrl.innerText);
+  navigator.clipboard.writeText(generatedUrl.value);
 };
 </script>
 
