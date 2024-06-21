@@ -52,7 +52,7 @@
             @click="copyToClipboard"
             class="ml-2 text-green-600 hover:text-green-800 focus:outline-none"
           >
-            <Icon name="bi:copy" />
+            <Icon :name="isCopied ? 'bi:check-lg' : 'bi:copy'" size="18" />
           </button>
         </div>
       </div>
@@ -61,6 +61,8 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from "vue-sonner";
+
 const { baseUrl } = useRuntimeConfig().public;
 const supabase = useSupabase();
 
@@ -68,6 +70,7 @@ const url = ref("");
 const customUrl = ref("");
 const generatedUrl = ref("");
 const isUrlGenerated = ref(false);
+const isCopied = ref(false);
 
 const generateShortUrl = async () => {
   const randomString = Math.random().toString(36).substring(2, 8);
@@ -76,7 +79,7 @@ const generateShortUrl = async () => {
 
 const generateUrl = async () => {
   if (!customUrl.value) generatedUrl.value = await generateShortUrl();
-  else generatedUrl.value =  `${baseUrl}/${customUrl.value}`;
+  else generatedUrl.value = `${baseUrl}/${customUrl.value}`;
 
   const payload = {
     long_url: url.value,
@@ -88,7 +91,10 @@ const generateUrl = async () => {
     .insert([payload])
     .select();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    toast.error("An error occurred while shortening the URL");
+    isUrlGenerated.value = false;
+  }
 
   if (data) isUrlGenerated.value = true;
 };
@@ -98,7 +104,15 @@ const submitForm = () => {
 };
 
 const copyToClipboard = () => {
+  isCopied.value = true;
+
   navigator.clipboard.writeText(generatedUrl.value);
+
+  toast.success("Copied to clipboard");
+
+  setTimeout(() => {
+    isCopied.value = false;
+  }, 2000);
 };
 </script>
 
