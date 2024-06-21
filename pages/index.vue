@@ -16,6 +16,18 @@
             required
           />
         </div>
+        <div>
+          <label for="customUrl" class="block text-sm font-medium text-gray-700"
+            >Custom short URL (optional)</label
+          >
+          <input
+            type="text"
+            name="customUrl"
+            v-model="customUrl"
+            placeholder="Enter custom alias"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
         <div class="flex items-center justify-between">
           <button
             type="submit"
@@ -49,19 +61,35 @@
 </template>
 
 <script setup lang="ts">
-const url = ref("");
-const generatedUrl = ref("");
+const supabase = useSupabase();
 
+const url = ref("");
+const customUrl = ref("");
+const generatedUrl = ref("");
 const isUrlGenerated = ref(false);
 
 const generateShortUrl = async () => {
   const randomString = Math.random().toString(36).substring(2, 8);
-  isUrlGenerated.value = true;
   return `https://linksprint.vercel.app/${randomString}`;
 };
 
 const generateUrl = async () => {
-  generatedUrl.value = await generateShortUrl();
+  if (!customUrl.value) generatedUrl.value = await generateShortUrl();
+  else generatedUrl.value = `https://linksprint.vercel.app/${customUrl.value}`;
+
+  const payload = {
+    long_url: url.value,
+    short_url: customUrl.value || generatedUrl.value,
+  };
+
+  const { data, error } = await supabase
+    .from("links")
+    .insert([payload])
+    .select();
+
+  if (error) throw new Error(error.message);
+
+  if (data) isUrlGenerated.value = true;
 };
 
 const submitForm = () => {
